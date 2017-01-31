@@ -1,0 +1,8 @@
+Send GET request to "https://waecdirect.org/DisplayResult.aspx" using field params
+
+Examination Year: {2016|2015|YYYY}, ExamYear
+Examination: {MAY/JUN | NOV/DEC}, ExamType
+Examination Number: {Valid waec reg number}, ExamNumber
+Card Serial Number: {Valid waec card serial}, serial
+PIN: {valid waec pin}, pin
+

@@ -1,0 +1,14 @@
+{
+    "name": "idoqo/waec",
+    "description": "Unofficial WAEC api",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "idoko",
+            "email": "radpangolin@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}

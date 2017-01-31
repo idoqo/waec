@@ -1,0 +1,4 @@
+# Composer's vendor directory
+vendor/
+# PHPStorm's config directory
+.idea
