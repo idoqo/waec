@@ -2,3 +2,4 @@
 vendor/
 # PHPStorm's config directory
 .idea
+composer.lock
