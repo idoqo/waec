@@ -98,9 +98,29 @@ class Request extends Model
         return $jsonResponse;
     }
 
+    /*
+     * Returns the HTML response given by curl after using
+     * passing $this->curlUrl to curl as host
+     */
     private function getCurlOutput() {
-        //make a request using curl and $this->curlUrl as the host.
-        return "";
+        //why the fuck does curl feels so cryptic?
+        $curlHandle = curl_init();
+        curl_setopt_array(
+            $curlHandle, array(
+                //set the url
+                CURLOPT_URL => $this->curlUrl,
+                CURLOPT_RETURNTRANSFER => true,
+                //enable headers, used to know where we're being redirected by main waec site
+                CURLINFO_HEADER_OUT => true,
+                //enable verbose mode to show output separately
+                CURLOPT_VERBOSE => true
+            )
+        );
+
+        $output = curl_exec($curlHandle);
+        $info = curl_getinfo($curlHandle);
+        $info['output'] = $output;
+        return utf8_encode(json_encode($info));
     }
 
     /**
@@ -109,11 +129,22 @@ class Request extends Model
      * @return string A JSON formatted string with appropriate keys.
      */
     private function encodeResponse($dataString) {
+        //todo make this saner...
         $response = array();
-        $response['success'] = true;
+        /*$response['success'] = true;
         $response['message'] = "Result check successful";
-        $response['url'] = $this->curlUrl;
+        $response['content'] = $this->getCurlOutput();*/
         //parse the output from curl and make it into something saner
-        return json_encode($response);
+        return json_encode(array("hello"=>$this->parseCurlOutput()));
+    }
+
+    /**
+     * using the value of the "output" key sent by @see getCurlOutput(), this parses the html string
+     * present in the output and figures whether the request failed or not
+     * @return String a json encoded string with relevant data
+     */
+    private function parseCurlOutput() {
+        $curlResponse = $this->getCurlOutput();
+        return json_decode($curlResponse)->output;
     }
 }

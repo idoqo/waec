@@ -10,7 +10,9 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {},
+    "require": {
+        "electrolinux/phpquery": "~0.9"
+    },
     "autoload": {
         "psr-4": {
             "model\\": "src/model",
