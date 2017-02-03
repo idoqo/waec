@@ -25,7 +25,20 @@ class Request extends Model
 
 	private $response;
 
-	public function __construct() {
+    /**
+     * Request constructor.
+     * @param String $number candidate's examination number
+     * @param String $pin Pin on the card
+     * @param String $serial Card serial number
+     * @param String $type @see $EXAM_TYPE_* static variables
+     * @param int $year Examination year
+     */
+	public function __construct($number=null,$pin=null,$serial=null,$type=null,$year=null) {
+	    $this->examNumber = $number;
+	    $this->cardPin = $pin;
+	    $this->cardSerial = $serial;
+        $this->examType = $type;
+        $this->examYear = $year;
 	    $this->response = new Response();
     }
 
