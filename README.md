@@ -95,3 +95,6 @@ On failure, the response will be such (assuming invalid scratch card as the reas
   }
 ]
 ``` 
+
+####Disclaimer
+I am in no way affiliated to WAEC, Fleet Technologies or Vatebra Technologies!!!
