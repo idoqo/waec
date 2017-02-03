@@ -9,6 +9,8 @@ class Request extends Model
 	public static $PARAM_CARD_SERIAL = "serial";
 	public static $PARAM_CARD_PIN = "pin";
 
+	const MAIN_URL = "https://www.waecdirect.org/DisplayResult.aspx";
+
 	//May/June
 	public static $EXAM_TYPE_RAIN = "MAY/JUN";
 	//November/December
@@ -104,14 +106,7 @@ class Request extends Model
     }
 
     public function execute() {
-        $mainUrl = "https://www.waecdirect.org/DisplayResult.aspx";
-        if (is_null($this->requestParams)) {
-            $this->makeResultUrl();
-        }
-        $this->curlUrl = $mainUrl."?".$this->requestParams;
-        $jsonResponse = $this->buildResponse();
-        header("Content-type: application/json");
-        return $jsonResponse;
+        return $this->buildResponse();
     }
 
     /*
@@ -119,6 +114,10 @@ class Request extends Model
      * passing $this->curlUrl to curl as host
      */
     private function getCurlOutput() {
+        if (is_null($this->requestParams)) {
+            $this->makeResultUrl();
+        }
+        $this->curlUrl = self::MAIN_URL."?".$this->requestParams;
         //why the fuck does curl feels so cryptic?
         $curlHandle = curl_init();
         curl_setopt_array(
@@ -140,22 +139,10 @@ class Request extends Model
         return utf8_encode(json_encode($info));
     }
 
-    /**
-     * using the value of the "output" key sent by @see getCurlOutput(), parses the html string
-     * present in the output
-     * @return array representation of content handpicked out of the curl output
-     */
-    private function parseCurlOutput() {
-        $content = array();
-        $curlResponse = $this->getCurlOutput();
-        $decoded = json_decode($curlResponse);
-        //the actual displayable html sent to curl
-        $output = $decoded->output;
-        //http status code as returned by curl
-        $content[Response::RESPONSE_KEY_HTTP_CODE] = $decoded->http_code;
+    private function parseFailedRequest($curlOutput) {
         //the redirect url, this contains the error msg if any and can deduce if the
         //request was successful
-        $redirectUrl = $decoded->redirect_url;
+        $redirectUrl = $curlOutput->redirect_url;
         //extract the error message and title from the redirect url
         $parts = parse_url($redirectUrl);
         parse_str($parts['query'], $getParams);
@@ -163,24 +150,77 @@ class Request extends Model
             $getParams['errMsg'] : null;
         $content[Response::RESPONSE_KEY_ERROR_TITLE] = (isset($getParams['errTitle'])) ?
             $getParams['errTitle'] : null;
-
-        $pq = \phpQuery::newDocument($output);
+        $pq = \phpQuery::newDocument($curlOutput->output);
         //extract the value of the html <title> tag
         $content[Response::RESPONSE_KEY_TITLE] = $pq->find('title')->html();
+
+        return $content;
+    }
+
+    /**
+     * using the value of the "output" key sent by @see getCurlOutput(), makes sense out of curl's response
+     * @return array representation of content handpicked out of the curl output
+     */
+    public function parseCurlOutput() {
+        $content = array();
+        $curlResponse = $this->getCurlOutput();
+        $decoded = json_decode($curlResponse);
+        //http status code as returned by curl
+        $responseCode = $decoded->http_code;
+        $content[Response::RESPONSE_KEY_HTTP_CODE] = $responseCode;
+        if ($responseCode == 200) {
+            $parsed = $this->parseResult($decoded);
+            $content[Response::RESPONSE_KEY_SUCCESS] = true;
+        } else {
+            $parsed = $this->parseFailedRequest($decoded);
+            $content[Response::RESPONSE_KEY_SUCCESS] = false;
+        }
+
+        $content[Response::RESPONSE_KEY_CONTENT] = $parsed;
+        return $content;
+    }
+
+    private function parseResult($curlOutput) {
+        $content = array();
+        $htmlBody = $curlOutput->output;
+
+        $pq = \phpQuery::newDocument($htmlBody); //todo use actual site
+        $content[Response::RESPONSE_KEY_TITLE] = $pq->find('title')->html();
+        //because the monster who coded the main site didn't see the need for class or ids,
+        //let's target the 5th tr element in the table tag and get it's html
+        $resultContent = $pq->find("body > form > table tr:nth-child(5)")->html();
+
+         //first table in $resultContent's parent supposedly contains both candidate info and grades
+         //the first four <tr> tags has number, name, type and center respectively
+        $relevant = pq($resultContent)->find("td > table:nth-child(1)")->parent()->html();
+        $relevant = pq($relevant); //convert it to a phpQuery object
+
+        $numberRow = $relevant->find("tr:eq(0)"); //zero based indexing
+        $nameRow = $relevant->find("tr:eq(1)");
+        $examTypeRow = $relevant->find("tr:eq(2)");
+        $centerRow = $relevant->find("tr:eq(3)");
+
+        $content[Response::RESPONSE_KEY_CANDIDATE_NUMBER] = pq($nameRow)->find("td:last")->html();
+        $content[Response::RESPONSE_KEY_CANDIDATE_NAME] = pq($numberRow)->find("td:last")->html();
+        $content[Response::RESPONSE_KEY_EXAM_TYPE] = pq($examTypeRow)->find("td:last")->html();
+        $content[Response::RESPONSE_KEY_EXAM_CENTER] = pq($centerRow)->find("td:last")->html();
+
+        $subjects = array();
+        foreach ($relevant->find("tr:gt(3)") as $subjectRow) {
+            $subjectRow = pq($subjectRow);
+            $subject = $subjectRow->find("td:first")->html();
+            $grade = $subjectRow->find("td:last")->html();
+
+            $subjects[$subject] = $grade;
+        }
+        $content[Response::RESPONSE_KEY_GRADES] = $subjects;
+
         return $content;
     }
 
     private function buildResponse() {
         $output = $this->parseCurlOutput();
-        if ($output[Response::RESPONSE_KEY_ERROR_TITLE] != null) {
-            $this->response->bind(Response::RESPONSE_KEY_SUCCESS, false);
-            $this->response->bind(Response::RESPONSE_KEY_ERROR_TITLE,
-                $output[Response::RESPONSE_KEY_ERROR_TITLE]);
-            $this->response->bind(Response::RESPONSE_KEY_ERROR_MESSAGE,
-                $output[Response::RESPONSE_KEY_ERROR_MESSAGE]);
-        }
-        $this->response->bind(Response::RESPONSE_KEY_HTTP_CODE, $output[Response::RESPONSE_KEY_HTTP_CODE]);
-        $this->response->bind(Response::RESPONSE_KEY_TITLE, $output[Response::RESPONSE_KEY_TITLE]);
+        $this->response->bindMultiple($output);
 
         return $this->response->getResponse();
     }

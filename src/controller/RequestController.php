@@ -6,6 +6,7 @@ use model\Request;
 class RequestController extends Controller
 {
 	public function actionIndex() {
+
 		if (isset($_POST) && !empty($_POST)) {
             $cardPin = (isset($_POST[Request::$PARAM_CARD_PIN])) ?
                 $_POST[Request::$PARAM_CARD_PIN] : "";

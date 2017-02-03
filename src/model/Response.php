@@ -19,6 +19,12 @@ class Response extends Model
     const RESPONSE_KEY_ERROR_MESSAGE = "error_message";
     const RESPONSE_KEY_ERROR_TITLE = "error_title";
 
+    const RESPONSE_KEY_CANDIDATE_NAME = "candidate_name";
+    const RESPONSE_KEY_CANDIDATE_NUMBER = "candidate_number";
+    const RESPONSE_KEY_EXAM_TYPE = "exam_type";
+    const RESPONSE_KEY_EXAM_CENTER = "center";
+    const RESPONSE_KEY_GRADES = "grades";
+
     /*
      * appends a new key-value pair to the response' body
      * It is recommended for $key to be one of @see RESPONSE_KEY*
