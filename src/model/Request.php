@@ -195,8 +195,8 @@ class Request extends Model
         $relevant = pq($resultContent)->find("td > table:nth-child(1)")->parent()->html();
         $relevant = pq($relevant); //convert it to a phpQuery object
 
-        $numberRow = $relevant->find("tr:eq(0)"); //zero based indexing
-        $nameRow = $relevant->find("tr:eq(1)");
+        $nameRow = $relevant->find("tr:eq(0)"); //zero based indexing
+        $numberRow = $relevant->find("tr:eq(1)");
         $examTypeRow = $relevant->find("tr:eq(2)");
         $centerRow = $relevant->find("tr:eq(3)");
 
