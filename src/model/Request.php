@@ -23,6 +23,12 @@ class Request extends Model
 	private $requestParams = null;
 	private $curlUrl;
 
+	private $response;
+
+	public function __construct() {
+	    $this->response = new Response();
+    }
+
     /**
      * String value of the year the examination was taken
      * @param String $examYear
@@ -69,8 +75,6 @@ class Request extends Model
         $this->examType = $examType;
     }
 
-
-
     private function makeResultUrl() {
 		$data = array(
 		    self::$PARAM_EXAM_YEAR => $this->examYear,
@@ -92,8 +96,7 @@ class Request extends Model
             $this->makeResultUrl();
         }
         $this->curlUrl = $mainUrl."?".$this->requestParams;
-        $response = $this->getCurlOutput();
-        $jsonResponse = $this->encodeResponse($response);
+        $jsonResponse = $this->buildResponse();
         header("Content-type: application/json");
         return $jsonResponse;
     }
@@ -120,31 +123,52 @@ class Request extends Model
         $output = curl_exec($curlHandle);
         $info = curl_getinfo($curlHandle);
         $info['output'] = $output;
+        //better to encode and decode later than deal with what curl output actually is...
         return utf8_encode(json_encode($info));
     }
 
     /**
-     * @param String $dataString preferably the output from curl, parsed using the
-     * html tags present
-     * @return string A JSON formatted string with appropriate keys.
-     */
-    private function encodeResponse($dataString) {
-        //todo make this saner...
-        $response = array();
-        /*$response['success'] = true;
-        $response['message'] = "Result check successful";
-        $response['content'] = $this->getCurlOutput();*/
-        //parse the output from curl and make it into something saner
-        return json_encode(array("hello"=>$this->parseCurlOutput()));
-    }
-
-    /**
-     * using the value of the "output" key sent by @see getCurlOutput(), this parses the html string
-     * present in the output and figures whether the request failed or not
-     * @return String a json encoded string with relevant data
+     * using the value of the "output" key sent by @see getCurlOutput(), parses the html string
+     * present in the output
+     * @return array representation of content handpicked out of the curl output
      */
     private function parseCurlOutput() {
+        $content = array();
         $curlResponse = $this->getCurlOutput();
-        return json_decode($curlResponse)->output;
+        $decoded = json_decode($curlResponse);
+        //the actual displayable html sent to curl
+        $output = $decoded->output;
+        //http status code as returned by curl
+        $content[Response::RESPONSE_KEY_HTTP_CODE] = $decoded->http_code;
+        //the redirect url, this contains the error msg if any and can deduce if the
+        //request was successful
+        $redirectUrl = $decoded->redirect_url;
+        //extract the error message and title from the redirect url
+        $parts = parse_url($redirectUrl);
+        parse_str($parts['query'], $getParams);
+        $content[Response::RESPONSE_KEY_ERROR_MESSAGE] = (isset($getParams['errMsg'])) ?
+            $getParams['errMsg'] : null;
+        $content[Response::RESPONSE_KEY_ERROR_TITLE] = (isset($getParams['errTitle'])) ?
+            $getParams['errTitle'] : null;
+
+        $pq = \phpQuery::newDocument($output);
+        //extract the value of the html <title> tag
+        $content[Response::RESPONSE_KEY_TITLE] = $pq->find('title')->html();
+        return $content;
+    }
+
+    private function buildResponse() {
+        $output = $this->parseCurlOutput();
+        if ($output[Response::RESPONSE_KEY_ERROR_TITLE] != null) {
+            $this->response->bind(Response::RESPONSE_KEY_SUCCESS, false);
+            $this->response->bind(Response::RESPONSE_KEY_ERROR_TITLE,
+                $output[Response::RESPONSE_KEY_ERROR_TITLE]);
+            $this->response->bind(Response::RESPONSE_KEY_ERROR_MESSAGE,
+                $output[Response::RESPONSE_KEY_ERROR_MESSAGE]);
+        }
+        $this->response->bind(Response::RESPONSE_KEY_HTTP_CODE, $output[Response::RESPONSE_KEY_HTTP_CODE]);
+        $this->response->bind(Response::RESPONSE_KEY_TITLE, $output[Response::RESPONSE_KEY_TITLE]);
+
+        return $this->response->getResponse();
     }
 }
