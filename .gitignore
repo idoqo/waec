@@ -4,3 +4,4 @@ vendor/
 .idea
 composer.lock
 assets/*
+test.php
