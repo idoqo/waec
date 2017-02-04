@@ -1,7 +1,7 @@
 ###Introduction
-This provides an unofficial platform for query the main WAEC site for results of a candidate.
-It is pretty susceptible to failure as long as the site's markup is susceptible to changes though 
-you can always send a PR if I am late to fixing the code to work with such change.
+This provides an unofficial API for querying the main WAEC site for results of a candidate.
+It is possible for it to suddenly break as site's markup is susceptible to random changes though 
+you can always send a PR if I am late to fixing the code to work with such change(s).
 ### Fetch Results
 Fetches the result of the candidate using the parameters given. Sending HTTP POSTs to `/` and `result` both yields the same response.
 #### Url
