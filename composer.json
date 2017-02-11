@@ -11,7 +11,8 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "electrolinux/phpquery": "~0.9"
+        "electrolinux/phpquery": "~0.9",
+        "firebase/php-jwt": "^4.0"
     },
     "autoload": {
         "psr-4": {
