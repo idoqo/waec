@@ -19,6 +19,7 @@ The data parameters correspond to the form fields found on the main website. The
 * `ExamType=[String]`: Either `MAY/JUN` OR `NOV/DEV`, representing the examination type.
 * `serial=[String]`: String representation of the Scratch card's serial number.
 * `pin=[String]`: String representation of the Scratch card's PIN.
+
 ##### Optional:
 None.
 #### Response
