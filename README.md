@@ -1,8 +1,8 @@
-###Introduction
+### Introduction
 This provides an unofficial API for querying the main WAEC site for results of a candidate.
 It is possible for it to suddenly break as site's markup is susceptible to random changes though 
 you can always send a PR if I am late to fixing the code to work with such change(s).
-###Installation
+### Installation
 Ensure you have composer installed already, else you could look that up [here](https://getcomposer.org/doc/00-intro.md).
 In the project's root directory, run `composer update` to install dependencies and `php -S 127.0.0.1:3000` to start the php server listening on port 3000 on the localhost.
 ### Fetch Results
@@ -100,5 +100,5 @@ On failure, the response will be such (assuming invalid scratch card as the reas
 ]
 ``` 
 
-####Disclaimer
+#### Disclaimer
 I am in no way affiliated to WAEC, Fleet Technologies or Vatebra Technologies!!!
