@@ -211,7 +211,8 @@ class Request extends Model
             $subject = $subjectRow->find("td:first")->html();
             $grade = $subjectRow->find("td:last")->html();
 
-            $subjects[$subject] = $grade;
+            $subjectItem = [$subject=>$grade];
+            $subjects[] = $subjectItem;
         }
         $content[Response::RESPONSE_KEY_GRADES] = $subjects;
 
