@@ -200,8 +200,8 @@ class Request extends Model
         $examTypeRow = $relevant->find("tr:eq(2)");
         $centerRow = $relevant->find("tr:eq(3)");
 
-        $content[Response::RESPONSE_KEY_CANDIDATE_NUMBER] = pq($nameRow)->find("td:last")->html();
-        $content[Response::RESPONSE_KEY_CANDIDATE_NAME] = pq($numberRow)->find("td:last")->html();
+        $content[Response::RESPONSE_KEY_CANDIDATE_NUMBER] = pq($numberRow)->find("td:last")->html();
+        $content[Response::RESPONSE_KEY_CANDIDATE_NAME] = pq($nameRow)->find("td:last")->html();
         $content[Response::RESPONSE_KEY_EXAM_TYPE] = pq($examTypeRow)->find("td:last")->html();
         $content[Response::RESPONSE_KEY_EXAM_CENTER] = pq($centerRow)->find("td:last")->html();
 
