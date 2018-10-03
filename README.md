@@ -23,7 +23,7 @@ The data parameters correspond to the form fields found on the main website. The
 ##### Optional:
 None.
 #### Response
-All API response are JSON formatted and three two consistent keys viz: `http_code`, `success` and `content`. These keys can be used to deduce
+All API response are JSON formatted and three consistent keys viz: `http_code`, `success` and `content`. These keys can be used to deduce
 the status of the request even before the other keys are analyzed.
 * `http_code=[Integer]`: Valid HTTP code representing the request status.
 * `success=[bool]`: A `true` or `false` response indicating whether we were able to get the results or not.
