@@ -19,6 +19,10 @@ class RequestController extends Controller
 		    $examYear = (isset($_POST[Request::$PARAM_EXAM_YEAR])) ?
                 $_POST[Request::$PARAM_EXAM_YEAR] : "";
 
+            /*
+            check that all required values are present. 
+            Card validation itself is handled by the main site.
+            */
 		    if (trim($cardPin) == "") {
 		        $this->actionError("Card PIN value cannot be blank");
             }
@@ -35,7 +39,6 @@ class RequestController extends Controller
 		        $this->actionError("Examination year cannot be blank");
             }
             else {
-		        //mini validation passed, now make actual requests
                 $request = new Request($examNumber,$cardPin,$cardSerial,$examType,$examYear);
                 echo $request->execute();
             }

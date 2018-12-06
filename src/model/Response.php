@@ -12,7 +12,7 @@ class Response extends Model
     const RESPONSE_KEY_URL = "curl_url";
     //String representation of the HTML title of curl's output
     const RESPONSE_KEY_TITLE = "title";
-    //JSON object containing the stuffs you probably only need
+    //JSON object containing the stuff you're probably here for.
     const RESPONSE_KEY_CONTENT = "content";
 
     const RESPONSE_KEY_HTTP_CODE = "http_code";
